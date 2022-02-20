@@ -41,16 +41,162 @@ Exploraratory Data Analysis
    6. you can examine how often specific values occur in a column by .value_counts() method
    
  """
+ df.shape
  
+ df.info()
  
-        
-        
-        
-        
-        
-        
+ df.head(5)
+ pd.set_option("display.max.columns", None)
+ 
+ # Let's try again after display max columns
+ 
+ df.head(5)
+ df.tail(5)
+ 
+ # descriptive statistics summary
+ 
+ df.describe()
+ df.describe(include = np.object)
+ 
+ # Aggregataing symbol column with respect to S_Score
+ 
+ df.groupby("sym", sort = False)["s_score"].sum()
+ 
+ """
+ Data Cleaning:
+      Remove all the rows where there is no price at time t
+ 
+ """
+ 
+ df = df[df['price_at_t'].notnull()]
+ df.info()
+ 
+ """
+ Create Datetime column which combines Data and time to make it easier to do timeseries analysis
+ 
+ """
+ 
+ df['Datetime'] = pd.to_datetime(df['date'].apply(str) + ' ' + df['time'])
+ df['Datetime'].head()
+ 
+ """
+ 
+ Data Cleaning 2:
+      Filter the data in the trading hours. For that operation, we need to set the Datetime column as the index because between_time() function 
+      raises exception when the index of the dataframe is not a DatetimeIndex
+ 
+ """
+ 
+ df = df.set_index('Datetime')
+ 
+ df = (df.between_time('09:30:00', '16:00:00'))
+ 
+ df.head()
+ df.info()
+ 
+ """
+ Data cleaning 3:
+      Remove unnamed columns from the dataset
+  
+ """
+ df = df.drop('Unnamed: 19', 1)  
+ df = df.drop('Unnamed: 20', 1)  
+ df = df.drop('Unnamed: 21', 1)  
+ 
+ # Now, drop all unnamed columns at once 
+ 
+ columns = ['Unnamed: 34', 'Unnamed: 35', 'Unnamed: 36']
+ df.drop(columns, inplace = True, axis = 1)
+ 
+ df.info()
+ 
+ """
+ To calculate return based on S_Score being positivie or negative, Let's separate the dataset by S_Score > 0 and S_Score < 0
+ 
+ """
+
+df1 = df[(df.s_delta > 2.0) & (df.s_score > 2.0)]
+df2 = df[(df.s_delta < -2.0) & (df.s_score < -2.0)]
+
+"""
+
+Now, let's calculate the return columns
+      Return Equation: (price @ t+n - price @ t) / price @ t
+
+Two ways to access columns:
+      df['columnname']
+      df.columnname
+
+"""
+
+df1['return_at_t_plus1'] = ((df1.price_at_t_plus1 - df1.price_at_t)/ df.price_at_t)
+df1['return_at_t_plus10'] = ((df1.price_at_t_plus10 - df1.price_at_t)/ df.price_at_t)
+df1['return_at_t_plus30'] = ((df1.price_at_t_plus30 - df1.price_at_t)/ df.price_at_t)
+df1['return_at_t_plus60'] = ((df1.price_at_t_plus60 - df1.price_at_t)/ df.price_at_t)
+df1['return_at_t_plus90'] = ((df1.price_at_t_plus90 - df1.price_at_t)/ df.price_at_t)
+
+df1['SPY_return_at_t_plus1'] = ((df1.price_spy_at_t_plus1 - df1.price_spy_at_t)/ df.price_spy_at_t)
+df1['SPY_return_at_t_plus10'] = ((df1.price_spy_at_t_plus10 - df1.price_spy_at_t)/ df.price_spy_at_t)
+df1['SPY_return_at_t_plus30'] = ((df1.price_spy_at_t_plus30 - df1.price_spy_at_t)/ df.price_spy_at_t)
+df1['SPY_return_at_t_plus60'] = ((df1.price_spy_at_t_plus60 - df1.price_spy_at_t)/ df.price_spy_at_t)
+df1['SPY_return_at_t_plus90'] = ((df1.price_spy_at_t_plus90 - df1.price_spy_at_t)/ df.price_spy_at_t)
+
+
+
+df2['return_at_t_plus1'] = ((df2.price_at_t_plus1 - df2.price_at_t)/ df.price_at_t)
+df2['return_at_t_plus10'] = ((df2.price_at_t_plus10 - df2.price_at_t)/ df.price_at_t)
+df2['return_at_t_plus30'] = ((df2.price_at_t_plus30 - df2.price_at_t)/ df.price_at_t)
+df2['return_at_t_plus60'] = ((df2.price_at_t_plus60 - df2.price_at_t)/ df.price_at_t)
+df2['return_at_t_plus90'] = ((df2.price_at_t_plus90 - df2.price_at_t)/ df.price_at_t)
+
+df2['SPY_return_at_t_plus1'] = ((df2.price_spy_at_t_plus1 - df2.price_spy_at_t)/ df.price_spy_at_t)
+df2['SPY_return_at_t_plus10'] = ((df2.price_spy_at_t_plus10 - df2.price_spy_at_t)/ df.price_spy_at_t)
+df2['SPY_return_at_t_plus30'] = ((df2.price_spy_at_t_plus30 - df2.price_spy_at_t)/ df.price_spy_at_t)
+df2['SPY_return_at_t_plus60'] = ((df2.price_spy_at_t_plus60 - df2.price_spy_at_t)/ df.price_spy_at_t)
+df2['SPY_return_at_t_plus90'] = ((df2.price_spy_at_t_plus90 - df2.price_spy_at_t)/ df.price_spy_at_t)
+
+"""
+Merging two dataframes df1 and df2 vertically via pd.concat method
+"""
+
+# df = pd.concat([df1, df2], ignore_index = True)
+
+# df.info()
+
+"""
+Now let's take return difference between security and SPY to compare the performance of the indicator S_Score
+
+"""
+
+df1['Net_return_at_t_plus1'] = df1['return_at_t_plus1'] - df1['SPY_return_at_t_plus1']
+df1['Net_return_at_t_plus10'] = df1['return_at_t_plus10'] - df1['SPY_return_at_t_plus10']
+df1['Net_return_at_t_plus30'] = df1['return_at_t_plus30'] - df1['SPY_return_at_t_plus30']
+df1['Net_return_at_t_plus60'] = df1['return_at_t_plus60'] - df1['SPY_return_at_t_plus60']
+df1['Net_return_at_t_plus90'] = df1['return_at_t_plus90'] - df1['SPY_return_at_t_plus90']
+
+
+df2['Net_return_at_t_plus1'] = df2['return_at_t_plus1'] - df2['SPY_return_at_t_plus1']
+df2['Net_return_at_t_plus10'] = df2['return_at_t_plus10'] - df2['SPY_return_at_t_plus10']
+df2['Net_return_at_t_plus30'] = df2['return_at_t_plus30'] - df2['SPY_return_at_t_plus30']
+df2['Net_return_at_t_plus60'] = df2['return_at_t_plus60'] - df2['SPY_return_at_t_plus60']
+df2['Net_return_at_t_plus90'] = df2['return_at_t_plus90'] - df2['SPY_return_at_t_plus90']
+
+df1.to_csv('S_Score And S_Delta Greater Than 2.csv')
+
+df2.to_csv('S_Score And S_Delta Less Than -2.csv')
+
+
+
+
+
+
+
+
+
+
+
         
      
 
-"""
+
 
