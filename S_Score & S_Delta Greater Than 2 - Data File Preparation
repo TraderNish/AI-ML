@@ -1,2 +1,56 @@
 
 
+@author: Nishant
+
+"""
+Objective:
+      Prepare the file from year price data where S_Score and S_Delta both are > 2
+
+"""
+
+import pandas as pd
+import os
+import numpy as np
+
+"""
+Load 1 year data
+"""
+
+print ("Current Working Directory", os.getcwd())
+
+df = pd.read_csv('Year Price Data.csv', sep = ",")
+
+# Let's see how many columns are there
+
+for col in df.columns:
+  print(col)
+  
+"""
+Exploraratory Data Analysis
+
+  1. shape attribute will show us the shape(dimensionality) of the data - number of columns and rows
+  2. info() method will display all columns and their data types:
+        Object data type often means (catch-all for columns that pandas doesn't recognize as any other specific types) that all of the values in the columns are strings
+  3. head() method will give us an idea about top 5 rows.
+  4. We can configure pandas to display all columns, with 2 decimal places like this:
+        pd.set_option("display.max.columms", 2)
+  5. describe() method will provide the descriptive statistics summary (an overview of the values each column contains)
+        Min, Max, Count, etc.
+        .describe() only analyzes numeric columns by default, but you can provide other data types if you use the include parameter:
+        df.describe(include = np.object)
+   6. you can examine how often specific values occur in a column by .value_counts() method
+   
+ """
+ 
+ 
+        
+        
+        
+        
+        
+        
+        
+     
+
+"""
+
