@@ -43,3 +43,137 @@ x = [['raw_s', 's_delta', 's_score']].values
 
 """
 
+# Create training and testing sets
+# we will use common split 70-30
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
+
+# validate set shapes 
+print(X_train.shape, y_train.shape)
+print(X_test.shape, y_test.shape)
+
+# Create the regressor: reg_all
+reg_all = LinearRegression()
+
+"""
+Note: to get the statistical values table, we can use statsmodel library
+
+X2 = sm.add_constant(X_train)
+est = sm.OLS(y_train, X2)
+est2 = est.fit()
+print(est2.summary())
+
+"""
+
+# Fit the regressor to the training data
+reg_all.fit(X_train, y_train)
+
+# Predict on the test data: y_pred
+y_pred = reg_all.predict(X_test)
+
+"""
+Model Validation:
+      We created a model using the training data, used it to predict outcomes on a split segment of test data 
+      then will use a scoring method to determine a measure of effectiveness (mean squared error) of the model on the testing data.
+      
+      This gives us an approximation of how well the model will perform on other similar datasets
+    
+"""
+
+# Compute and print R^2 and RMSE
+# R^2 is the percentage of explained variance of the predictions
+print("R^2: {}".format(reg_all.score(X_test, y_test)))
+
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+print("Root Mean Squared Error: {}".format(rmse))
+
+# The Coefficients 
+print('Coefficients: \n', reg_all.coef_)
+
+# The Intercept
+print('Intercept: \n', reg_all.intercept_)
+
+"""
+Model Evaluation:
+      RMSE: 0.0121
+      R2: 0.092
+
+"""
+"""
+5-fold cross-validation:
+
+      Cross-validation is a vital step in evaluating a model. It maximizes the amount of data that is used to train the model, as during the course 
+      of training, the model is not only trained, but also tested on all of the available data.
+      
+      Here we will use 5-fold cross validation on the data. By default, scikit-learn's  cross_val_score() function uses R2 as the metric of choice
+      for regression. Sicne we are performing a 5-fold cross-validation, the function will return 5 scores. 
+      
+      We will compare these 5 scores and then take their average. 
+
+"""
+
+# Import the necessary modules
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
+
+# Create a linear regression object: reg
+reg5 = LinearRegression()
+
+# Compute 5-fold cross-validation scores: cv_scores
+cv_scores = cross_val_score(reg5, X, y, cv = 5)
+
+# Print the 5-fold cross-validation scores
+print(cv_scores)
+
+print("Average 5-fold CV Score: {}".format(np.mean(cv_scores)))
+
+"""
+Let's try with 20 fold CV and see whether it improves the score
+Update:
+      looks like a little bit but it will be more computational
+
+"""
+
+# Create a linear regression object: reg
+reg20 = LinearRegression()
+
+# Compute 20-fold cross-validation scores: cv_scores
+cv_scores = cross_val_score(reg5, X, y, cv = 20)
+
+# Print the 20-fold cross-validation scores
+print(cv_scores)
+
+print("Average 20-fold CV Score: {}".format(np.mean(cv_scores)))
+
+"""
+====================================================================================================================================
+====================================================================================================================================
+"""
+
+"""
+Regularization:
+      
+
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
