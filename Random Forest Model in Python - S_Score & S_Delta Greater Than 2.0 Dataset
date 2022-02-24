@@ -199,7 +199,7 @@ y_pred = best_model.predict(X_test)
 rmse_test = MSE(y_test, y_pred) ** (1/2)
 
 # Print rmse_dt
-print("Test set RMSE of dt: {:.4f}".format(rmse_test))
+print("Test set RMSE of grid_rf: {:.4f}".format(rmse_test))
 
 """
 Test set RMSE of rf: 0.0143
