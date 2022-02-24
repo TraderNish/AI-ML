@@ -124,7 +124,7 @@ Hyperparameter Tuning
 """
 We will manually set the grid of hyperparameters that will be used to tune rf's hyperparameters and find the optimal regressor.
 
-For this purpose, we will be constructing a grid of hyperparameters and tune the number of estimators such as max_depth, and the maximum number of 
+For this purpose, we will be constructing a grid of hyperparameters and tune the number of estimators, max_depth, maximum number of 
 features used when splitting each node and the minimum number of samples (or fraction) per leaf.
 
 1. Set the hyperparameter grid of rf
