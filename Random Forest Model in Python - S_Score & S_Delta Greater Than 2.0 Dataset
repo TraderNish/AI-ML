@@ -11,12 +11,14 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
+import seaborn as sns
 
 """
 Load 1 year dtaa where S_Score > 2.0 and S_Delta > 2.0 for various frequencies and try to find out which independent variable has related with the
 response variable
 
-Independent variables = [['raw_s', 's_delta', 's_score']]
+Independent variables = [['raw_s', 's_delta', 's_score']] -- We have just mentioned couple of independent variables. In actual, you need to include all 
+                                                              the independent variables
 
 Response variable = [return_at_t_plus10]
 
@@ -45,3 +47,86 @@ x = [['raw_s', 's_delta', 's_score']].values
 # Create training and testing sets
 # we will use common split 70-30
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
+
+"""
+Now we will use the random forests algorithm. As a first step, we will define a random forests regressor and fit it to the training set. 
+
+The dataset is ready and split into 80% train and 20% test. The features matrix X_train and the array y_train are available. 
+
+"""
+# import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor
+
+# Instantiate rf
+rf = RandomForestRegressor(random_state = 2)
+
+"""
+====================================================================================================================================
+====================================================================================================================================
+
+Without Hyperparameter Tuning
+
+"""
+
+# Fit rf to the training set
+rf.fit(X_train, y_train)
+
+"""
+we will now evaluate the test set RMSE of the random forests regressor rf that we have trained
+
+"""
+
+# Import mean_squared_error from sklearn.metrics as MSE
+from sklearn.metrics import mean_squared_error as MSE
+
+# Compute y_pred
+y_pred = rf.predict(X_test)
+
+# Compute mse_dt
+rmse_test = MSE(y_test, y_pred) ** (1/2)
+
+# Print rmse_dt
+print("Test set RMSE of rf: {:.4f}".format(rmse_test))
+
+"""
+
+Test set RMSE of rf: 0.0147
+
+"""
+"""
+Now we will determine which features were the most predictive according to the random forests regressor rf that we trained.
+
+For this purpose, we will draw a horizontal barplot of the feature importance as assessed by rf. This can be done easily by plotting capabilities of pandas.
+
+We have created a pandas.Series object called importances containing the feature names as index and their importances as values. In addition,
+matplotlib.pyplot is available as plt and pandas as pd.
+
+"""
+
+# Create a pd.Series of features importances
+importances = pd.Series(data = rf.feature_importances_,
+                        index = X_train.columns)
+# Sort importances
+importances_sorted = importances.sort_values()
+
+# Draw a horizontal barplot of importances_sorted
+importances_sorted.plot(kind = 'barh', color = 'Lightgreen')
+plt.title('Features Importances')
+plt.show()
+
+"""
+====================================================================================================================================
+====================================================================================================================================
+
+Hyperparameter Tuning
+
+"""
+
+
+
+
+
+
+
+
+
