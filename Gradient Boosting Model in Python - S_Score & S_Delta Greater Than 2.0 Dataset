@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import seaborn as sns
-from sklearn.metrics import r2_score
+
 
 """
 Load 1 year dtaa where S_Score > 2.0 and S_Delta > 2.0 for various frequencies and try to find out which independent variable has related with the
@@ -70,8 +70,169 @@ gb = GradientBoostingRegressor(
       min_samples_leaf = 10,
       random_state = 2)
       
-      
+"""
+Now, let's train the gradient boosting regressor gb.
 
+The dataset is ready and split into 80% train and 20% test. The features matrix X_train, X_test and the array y_train, y_test are available. 
+
+"""
+# Fit gb to the training set
+gb.fit(X_train, y_train)
+
+# Predict test set labels
+y_pred = gb.predict(X_test)
+
+"""
+Now that the test set predictions are available, we can use them to evaluate the test set RMSE of gb.
+
+"""
+# Import mean_squared_error from sklearn.metrics as MSE
+from sklearn.metrics import mean_squared_error as MSE
+
+# Evaluate the test set labels
+rmse_test = MSE(y_test, y_pred) ** (1/2)
+
+# Print rmse_dt
+print("Test set RMSE of gb: {:.4f}".format(rmse_test))
+
+"""
+Test set RMSE of gb: 0.0086
+
+"""
+# Import R2 score
+from sklearn.metrics import r2_score
+r2_score(y_test, y_pred, sample_weight = None, multioutput = 'uniform_average')
+
+# Create a pd.Series of features importances
+importances = pd.Series(data = gb.feature_importances_,
+                        index = X_train.columns)
+                        
+# Sort importances
+importances_sorted = importances.sort_values()
+
+# Draw a horizontal barplot of importances_sorted
+importances_sorted.plot(kind = 'barh', color = 'Lightgreen')
+plt.title('Features Importances')
+plt.show()
+
+"""
+====================================================================================================================================
+====================================================================================================================================
+
+Hyperparameter Tuning
+
+"""
+"""
+We will manually set the grid of hyperparameters that will be used to tune gb's hyperparameters and find the optimal regressor.
+
+For this purpose, we will be constructing a grid of hyperparameters and tune the number of estimators, max_depth, maximum number of 
+features used when splitting each node and the minimum number of samples (or fraction) per leaf.
+
+"""
+
+# Instantiate gb
+gb = GradientBoostingRegressor(random_state = 2)
+
+"""
+1. Set the hyperparameter grid of gb
+
+n_estimators = number of trees in the forest
+max_features = max number of features considered for splitting a node
+max_depth = max number of levels in each decision tree
+min_samples_split = min number of data points placed in a node before the node is split
+min_samples_leaf = min number of data points allowed in a leaf node
+
+"""
+
+# Define the dictionary 'params_rf'
+params_gb = {
+      n_estimators = [100, 350, 500, 1000],
+      max_depth = [4, 6, 8],
+      max_features = ['Log2', 'auto', 'sqrt'],
+      min_samples_leaf = [2, 10, 30]
+}
+
+"""
+2. Search for the optimal forest
+
+We will perform grid search using 3-fold cross validation to find rf's optimal hyperparameters. To evaluate each model in the grid, we will be
+using the negative mean squared error metric.
+
+"""
+# Import GridSearchCV
+from sklearn.model_selection import GridSearchCV
+
+grid_gb = GridSearchCV(
+            estimator = gb,
+            param_grid = params_gb,
+            scoring = 'neg_mean_squared_error',
+            cv = 3,
+            verbose = 1,
+            n_jobs = -1)
+
+
+"""
+3. Searching for the best hyperparameters
+
+"""
+# Fit 'grid_gb' to the training set
+grid_gb.fit(X_train, y_train)
+
+"""
+4. Extracting the best hyperparameters
+
+"""
+
+# Extracting the best hyperparameters from 'grid_gb'
+
+best_hyperparams = grid_gb.best_params_
+print('Best hyperparameters:\n', best_hyperparams)
+
+
+"""
+Best hyperparameters:
+
+{'max_depth' = 4,
+'max_features = 'Log2',
+'min_samples_leaf' = 10,
+'n_estimators' = 100}
+
+5. Evaluating the best model performance
+
+Now, we will evaluate the test set RMSE of grid_gb's optimal model. For that, we will import the function mean_squared_error from sklearn_metrics
+under the alias MSE
+
+"""
+# Import mean_squared_error from sklearn.metrics as MSE
+from sklearn.metrics import mean_squared_error as MSE
+
+# Extract best model from 'grid_rf'
+best_model = grid_gb.best_estimator_
+
+# Predict the test set labels
+y_pred = best_model.predict(X_test)
+
+# Evaluate the test set labels
+rmse_test = MSE(y_test, y_pred) ** (1/2)
+
+# Print rmse_dt
+print("Test set RMSE of grid_gb: {:.4f}".format(rmse_test))
+
+"""
+Test set RMSE of rf: 0.0086
+
+"""
+# Create a pd.Series of features importances
+importances = pd.Series(data = best_model.feature_importances_,
+                        index = X_train.columns)
+                        
+# Sort importances
+importances_sorted = importances.sort_values()
+
+# Draw a horizontal barplot of importances_sorted
+importances_sorted.plot(kind = 'barh', color = 'Lightgreen')
+plt.title('Features Importances')
+plt.show()
 
 
 
