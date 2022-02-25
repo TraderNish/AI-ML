@@ -1,0 +1,129 @@
+
+@author Nishant
+
+# Import necessary modules
+
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import os
+import numpy as np
+
+
+"""
+Load 1 year dtaa where S_Score > 2.0 and S_Delta > 2.0 for various frequencies and try to find out which independent variable has related with the
+response variable
+
+Independent variables = [['raw_s', 's_delta', 's_score']]
+
+Response variable = [return_at_t_plus10]
+
+"""
+
+print("Current Working Directory ", os.getcwd())
+
+df = pd.read_csv('S_Score And S_Delta Greater Than 2.csv')
+
+"""
+Now, we will preprocess the data by standardizing it. 
+
+# Scale: The scale transform calculates the standard deviation for an attribute and divides each value by that standard deviation.
+# Center: The center transform calculates the mean for an attribute and subtracts it from each value. 
+# Standardize: Combining the scale and center transform will standardize your data. Attributes will have a mean value of 0 and a standard deviation of 1.
+
+"""
+# normalized_df = (df - df.mean())/ dt.std()
+
+"""
+Let's treat this as a classification problem. For that, let's create a function to create a new column which can be used in the classification algorithm.
+The column will be 1 if response variable return_at_t_plus10 is greater than return_at_t_plus1 or else 0
+
+if price_at_t_plus10 > price_at_t:
+  class = 1
+Else class = 0
+
+"""
+
+def f(df):
+  if (df.price_at_t_plus10 > df.price_at_t):
+    val = 1
+  else:
+    val = 0
+  return val
+  
+df['class'] = df.apply(f, axis =1)
+
+"""
+We can build a logistic regression model using the module linear_model from sklearn. First, you create a logistic regression model using the 
+LogisticRegression() method:
+
+Logreg = Linear_model.LogisticRegression()
+
+Next, you need to feed data to the Logistic regession model, so that it can be fit. X contains the predictive variables, where y has the target. 
+
+Independent variables = df[['raw_s', 's_delta', 's_score']]
+
+Response variable = df[[return_at_t_plus10]]
+
+Logred.fit(X, y)
+
+"""
+
+# import linear_model from sklearn
+from sklearn import linear_model
+
+# Create a dataframe X that only contains the candidate predictors 
+
+# Create arrays for features and target variables
+
+y = df['return_at_t_plus10'].values
+
+x = [['raw_s', 's_delta', 's_score']].values
+
+# Create a logistic regression model logreg and fit it to the data.
+logreg = linear_model.LogisticRegression()
+logreg.fit(X, y)
+
+"""
+The logreg now holds a logistic regression model that is fit to the data. Given a fitted logistic regression model logreg, you can retrieve the 
+coefficients using the attribute coef_. 
+
+The order in which the coefficients appear, is the same as the order in which variables were fed to the model. The intercept can be retrieved
+using the attribute intercept_
+
+"""
+
+y = df['return_at_t_plus10'].values
+
+x = [['raw_s', 's_delta', 's_score']].values
+
+# Create a logistic regression model logreg and fit it to the data.
+logreg = linear_model.LogisticRegression()
+logreg.fit(X, y)
+
+# Assign the intercept to the variable intercept
+intercept = logreg.intercept_
+print(intercept)
+
+"""
+Calculating AUC:
+  AUC is often used to quantify the performance of the logistic regression model. It is a number between 0 and 1 that expresses how well the model 
+  order the object from low chance to be a target to high chance to be a target. Perfect models have AUC of 1 whereas random models have AUC of 
+  0.5. In python, AUC can be easily calculated using the function roc_auc_score from the sklearn package.
+
+"""
+
+# Import linear_model from sklearn
+from sklearn.metrics import roc_auc_score
+
+# make prediction
+predictions = logreg.predict_proba(X)
+predictions_target = predictions[:, 1]
+
+# Calculate the AUC value
+auc = roc_auc_score(y, predictions_target)
+print(round(auc, 1))
+
+"""
+Nice! An AUC of 0.56 is a typical result for this type of cases. Let's check if we can improve using different sets of variables.
+
+"""
