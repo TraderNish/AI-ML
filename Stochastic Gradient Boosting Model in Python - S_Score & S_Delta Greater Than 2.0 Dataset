@@ -51,13 +51,55 @@ x = df[['raw_s', 's_delta', 's_score']]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
 
 """
-Now we will use the Gradient Boosting algorithm. As a first step, we will define a Gradient Boosting regressor and fit it to the training set. 
+Now we will use the Gradient Boosting algorithm. Gradient Boosting algorithm uses exhaustive search and each tree is trained to use the best
+split and features. In that case, each tree may end up using the some split and features. To mitigate that, we can use stochastic gradient 
+boosting algorithm. 
+
+Each tree is trained on the random subset of training data. Sampled instances are without replacement. Features are sampled without resamples
+when choosing split points. Effect is further randomness or variance to the ensamble of the trees. 
+
+As a first step, we will define a Stochastic Gradient Boosting regressor and fit it to the training set. 
 
 The dataset is ready and split into 80% train and 20% test. The features matrix X_train and the array y_train are available. 
 
 Import GradientBoostingRegressor from sklearn.ensemble. Instantiate a gradient boosting regressor by setting the parameters:
 
-max_depth to 4
-n_estimators to 100
+max_depth to 6
+n_estimators to 300
+
+"""
+
+# import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+
+sgbr = GradientBoostingRegressor(
+      n_estimators = 300,
+      max_depth = 6,
+      max_features = 0.75,
+      subsample = 0.9,
+      random_state = 2)
+      
+
+# Fit gb to the training set
+sgbr.fit(X_train, y_train)
+
+# Predict test set labels
+y_pred = sgbr.predict(X_test)
+
+"""
+Now that the test set predictions are available, we can use them to evaluate the test set RMSE of sgbr.
+
+"""
+# Import mean_squared_error from sklearn.metrics as MSE
+from sklearn.metrics import mean_squared_error as MSE
+
+# Evaluate the test set labels
+rmse_test = MSE(y_test, y_pred) ** (1/2)
+
+# Print rmse_dt
+print("Test set RMSE of sgbr: {:.4f}".format(rmse_test))
+
+"""
+Test set RMSE of gb: 0.0100
 
 """
