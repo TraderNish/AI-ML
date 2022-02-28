@@ -127,3 +127,73 @@ print(round(auc, 1))
 Nice! An AUC of 0.56 is a typical result for this type of cases. Let's check if we can improve using different sets of variables.
 
 """
+
+"""
+Forward Stepwise Varibale Selection:
+      The forward stepwise variable selection method starts with an empty variable set and proceeds in steps, where in each step the next best variable is added.
+      
+      The AUC function calculates for a given variable set variables the AUC of the model that uses this variable set as predictors. The next best function
+      calculates which variable should be added in the next step to the variable list.
+      
+      We will calculate the AUC of a given variable set, calculate which variable should be added next, and verify that this indeed results in an optimal AUC.
+
+"""
+from sklearn import linear_model
+from sklearn.metrics import roc_auc_score
+
+def auc(variables, target, df):
+  X = df[variables]
+  y = df[target]
+  
+  logreg = linear_model.LogisticRegression()
+  logreg.fit(X, y)
+  
+  predictions = logreg.predict_proba(X)[:, 1]
+  auc = roc_auc_score(y, predictions)
+  
+  return auc
+   
+def next_best(current_variables, candidate_variables, target, df):
+  best_auc = -1
+  best_variable = None
+  
+  for v in candidate_variables:
+    auc_v = auc(current_variables + [v], target, df)
+    
+    if auc_v >= best_auc:
+      best_auc = auc_v
+      best_variable = v
+    
+    return best_variable
+
+"""
+Calculate the AUC of a model that uses "return_at_t_plus1" as predictors. You should pass these variables in a list as the first argument to the auc
+function.
+
+"""
+
+# Find the Candidate variables - list of independent variables
+
+candidate_variables = ["raw_s", "raw_s_mean", "raw_vol", "raw_score"]
+
+target = ['class']
+
+# Intialize the current variables 
+
+current_variables = []
+
+# The forward stepwise variable selection procedure
+
+number_iterations = 5
+for i in range(0, number_iterations):
+  next_variable = next_best(current_variables, candidate_variables, target, df)
+  current_variables = current_variables + [next_variable]
+  candidate_variables.remove(next_variable)
+  print("Variable added in step" + str(i+1) + "is" + next_variable + ".")
+
+print(current_variables)
+
+auc_variables = auc(["raw_s", "raw_s_mean", "raw_score"])
+
+print(round(auc_variables, 4))
+
