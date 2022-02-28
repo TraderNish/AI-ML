@@ -145,4 +145,76 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Curve')
 plt.show()
 
+"""
+AUC Score:
+  There are a number of different methods you can use to evaluate your model's performance. AUC score is one such method which gives you an idea
+  whether your model is better than the rangom guessing. If the AUC is greater than 0.5, the model is better than random guessing. 
+  
+"""
 
+# Import necessary modules
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import roc_auc_score
+
+"""
+Using the logreg classifier, which has been fit to the training data, compute the predicted proababilities of the labels of the test set X_test
+and compute predicted probabilities: y_pred_prob
+
+"""
+
+y_pred_prob = logreg.predict_proba(X_test)[:, 1]
+
+# Compute and print AUC Score
+print("AUC: {}".format(roc_auc_score(y_test, y_pred_prob)))
+
+"""
+Now, we will compute the AUC scores by performing 5 fold cross validation. We will use the cross_val_score() function and specify the scoring
+parameter to be 'roc_auc'. 
+
+Also, compute cross-validated AUC scores: cv_auc
+
+"""
+cv_auc = cross_val_score(logreg, X, y, cv = 5, scoring= 'roc_auc')
+
+# print list of AUC scores
+print("AUC scores computed using 5-fold cross-validation: {}".format(cv_auc))
+
+"""
+Hyperparameter Tuning:
+  When we do the regression, we chose the parameters for the model that fits the data best. These parameters which need to be specified before fitting
+  the model are called hyperparameters. In other words, these are the parameters which can't be explicitly learned by fitting the model. 
+  
+ SearchCV can help us try different combination of hyperparameters on the data to find the best combination. 
+
+"""
+
+# Import necessary modules
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+
+"""
+In addition to C, logistic regression has a penalty hyperparameter which specifies whether to use 'l1' or 'l2' regularization. 
+
+"""
+
+# Create the hyperparameter grid
+c_space = np.logspace(-5, 8, 15, 30)
+param_grid = {'C': c_space, 'penalty':['L1', 'L2']}
+
+# Instantiate the logistic regression classifier: logreg
+logreg = LogisticRegression()
+
+# Create training and testing sets
+# we will use common split 70-30
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
+
+# Instantiate the GridSearchCV object: logreg_cv
+logreg_cv = GridSearchCV(logreg, param_grid, cv = 5)
+
+# Fit it to the training data
+logreg_cv.fit(X_train, y_train)
+
+# Print the optimal parameters and best score
+print("Tuned Logistic Regression Parameter: {}".format(logreg_cv.best_params_))
+print("Tuned Logistic Regression Parameter: {}".format(logreg_cv.best_score_))
