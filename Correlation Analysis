@@ -1,0 +1,71 @@
+
+@author: Nishant
+
+"""
+Objective:
+      Find out the relationship between factors and returns. 
+      Dependent variable = Net_return_at_t_plus10(Rt - SPY Rt),
+      Independent variable = s_score, sv_score, s_buzz, s_delta
+
+"""
+
+import pandas as pd
+import os
+import numpy as np
+
+"""
+Load 1 year data
+"""
+
+print ("Current Working Directory", os.getcwd())
+
+df = pd.read_csv('S_Score & S_Delta Greater Than 2.csv', sep = ",")
+
+# Let's see how many columns are there
+
+for col in df.columns:
+  print(col)
+  
+"""
+Correlation calculations:
+  we need to round up s_delta values in another column to get the idea of correlation in the variou ranges
+  df['p'] = (np.ceil(df.s_score/ 10)*10).astype(int)
+
+"""
+
+df['s_delta_g'] = (np.ceil(df.s_delta)).astype(int)
+df['s_delta_g'].head()
+df['s_delta_g'].describe()
+
+"""
+Correlations:
+  Calculate correlation between list of return columns and s_score with the help of pandas functions "groupby" and "corr"
+
+"""
+
+a = df.groupby('s_delta_g')[['s_delta', 'return_at_t_plus1']].corr().unstack().iloc[:, 1]
+b = df.groupby('s_delta_g')[['s_delta', 'return_at_t_plus10']].corr().unstack().iloc[:, 1]
+c = df.groupby('s_delta_g')[['s_delta', 'return_at_t_plus30']].corr().unstack().iloc[:, 1]
+d = df.groupby('s_delta_g')[['s_delta', 'return_at_t_plus60']].corr().unstack().iloc[:, 1]
+e = df.groupby('s_delta_g')[['s_delta', 'return_at_t_plus90']].corr().unstack().iloc[:, 1]
+
+"""
+Count values for various categories of the s_delta_g column with the help of .value_counts()
+
+Combine all columns:
+  once done, combine all of them with "concat" function
+
+"""
+
+f = df['s_delta_g'].value_counts().sort_index()
+
+dfCorr = pd.concat([a, b, c, d, e, f], axis = 1)
+
+"""
+Lastly, we will take the csv file for the dataset 
+
+df.to_csv('df.csv')
+
+"""
+
+dfCorr.to_csv('df.csv')
