@@ -1,1 +1,40 @@
+# Set the directory and path right
+getwd()
+setwd("C:/Users/Nishant/Desktop/S_Score And S_Delta")
+
+# Load the dataset from csv file
+df = read.csv("filename.csv")
+
+# Import the readyxl, tidyverse, xgboost, and caret packages
+library(readyxl)
+library(tidyverse)
+library(xgboost)
+library(caret)
+library(dplyr)
+
+# Using the dplyr package, let's take a subset of df:
+df1 = df %>% select(raw_s, raw_s_mean, s, s_mean, s_delta, sv_vol)
+
+# For reproducibility, set the seed
+set.seed(123)
+
+# Create index for testing and training data
+inTrain = createDataPartition(y = df1$return_at_t_plus10, p = 0.8, list = FALSE)
+
+# Subset data to training
+training = df1[inTrain, ]
+
+# Subset the rest to test
+testing = df1[-inTrain, ]
+
+# Convert the training and testing sets into DMatrixes:
+# DMatrix is the recommended class in xgboost
+X_train = xgb.DMatrix(as.matrix(training %>% select (-return_at_t_plus10)))
+y_train = training$return_at_t_plus10
+X_train = xgb.DMatrix(as.matrix(testing %>% select (-return_at_t_plus10)))
+y_test = testing$return_at_t_plus10
+
+# Specify cross-validation method and number of folds
+# Also enable parallel computation
+
 
