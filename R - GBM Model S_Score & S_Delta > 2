@@ -1,1 +1,40 @@
 
+
+getwd()
+
+setwd("C:/Users/Nishant/Desktop/S_Score And S_Delta")
+df = read.csv("filename.csv")
+
+# Total number of rows in the data frame
+n = nrow(df)
+
+# Number of rows for the training set - 80% of the dataset
+n_train = round(0.80*n)
+
+# Create a vector of indices which is an 80% random sample
+set.seed(123)
+train_indices = sample(1:n, n_train)
+
+# Subset the data frame to training indices only
+df_train = df[train_indices, ]
+
+# Exclude the training indices to create the test set
+df_test = df[-train_indices, ]
+
+# Import the GBM library
+library(gbm)
+
+# Convert "yes" to 1, no to "0"
+df_train$return10 = ifelse(df_train$return_at_t_plus10 > df_train$return_at_t_plus1, 1, 0)
+
+# Train a 10,000 tree GBM Model: formula y ~ x (Independent Variables)
+model = gbm(formula = return10 ~ raw_s + raw_s_mean + raw_vol + s + s_mean,
+            distribution = "bernoulli",
+            data = df_train,
+            n.trees = 20,000)
+            
+# Print the model object
+print(model)
+
+# Summary () prints variable importance
+summary(model)
