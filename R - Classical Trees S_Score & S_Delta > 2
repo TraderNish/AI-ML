@@ -1,0 +1,106 @@
+# Import the packages
+
+library(tidyverse)
+library(caret)
+library(dplyr)
+library(e1071)
+library(psycho)
+
+getwd()
+
+setwd("C:/Users/Nishant/Desktop/S_Score And S_Delta")
+df = read.csv("filename.csv")
+
+# Using the dplyr package, let's take a subset of df1:
+
+df2 = df1 %>%
+      select(col1, col2, col3)
+      
+df3 = df1 %>%
+      select(class)
+      
+# preprocess the data by normalizing it
+# Scale: The scale transform calculates the standard deviation for an attribute and divides each value by that standard deviation.
+# Center: The center transform calculates the mean for an attribute and subtracts it from each value.
+
+# Normalize: Combining the scale and center transform will standardize your data.
+# Attributes will have a mean value of 0 and a standard deviation of 1.
+
+# Build your own normalize() function
+normalize = function(x) {
+  num = x - min(x)
+  denom = max(x) - min(x)
+  return (num/ denom)
+}
+
+# Normalize the data
+df4 = as.data.frame(lapply(df2[1:10], normalize))
+
+# Combine normalize dataset with class
+df = cbind(df4, df3)
+
+# Summarize the data
+summary(df)
+
+# Determine the number of rows for training
+nrow(df) * 0.80
+
+# Create a random sample of row IDs 
+set.seed(123)
+sample_rows = sample(nrow(df), nrow(df) * 0.75)
+
+# Create the training dataset
+train = df[sample_rows, ]
+
+# Exclude the training indices to create the test set
+test = df[-sample_rows, ]
+
+# Examine the dataset to identify potential independent variable 
+str(train)
+
+# Explore the dependent variable 
+table(train$class)
+
+# ===========================================================================================================================
+# Building Classification Trees Without Prunning
+# ===========================================================================================================================
+
+
+
+
+
+
+
+# Total number of rows in the data frame
+n = nrow(df)
+
+# Number of rows for the training set - 80% of the dataset
+n_train = round(0.80*n)
+
+# Create a vector of indices which is an 80% random sample
+set.seed(123)
+train_indices = sample(1:n, n_train)
+
+# Subset the data frame to training indices only
+df_train = df[train_indices, ]
+
+# Exclude the training indices to create the test set
+df_test = df[-train_indices, ]
+
+# Import the GBM library
+library(gbm)
+
+# Convert "yes" to 1, no to "0"
+df_train$return10 = ifelse(df_train$return_at_t_plus10 > df_train$return_at_t_plus1, 1, 0)
+
+# Train a 10,000 tree GBM Model: formula y ~ x (Independent Variables)
+model = gbm(formula = return10 ~ raw_s + raw_s_mean + raw_vol + s + s_mean,
+            distribution = "bernoulli",
+            data = df_train,
+            n.trees = 20,000)
+            
+# Print the model object
+print(model)
+
+# Summary () prints variable importance
+summary(model)
