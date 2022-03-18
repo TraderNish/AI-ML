@@ -1,0 +1,21 @@
+
+# Import the packages
+
+library(tidyverse)
+library(caret)
+library(dplyr)
+library(e1071)
+library(psycho)
+
+getwd()
+
+setwd("C:/Users/Nishant/Desktop/S_Score And S_Delta")
+df = read.csv("filename.csv")
+
+# Using the dplyr package, let's take a subset of df1:
+
+df2 = df1 %>%
+      select(col1, col2, col3)
+      
+df3 = df1 %>%
+      select(class)
