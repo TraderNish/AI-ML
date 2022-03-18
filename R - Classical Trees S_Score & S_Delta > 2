@@ -65,42 +65,116 @@ table(train$class)
 # Building Classification Trees Without Prunning
 # ===========================================================================================================================
 
+# Load the rpart package
+library(rpart)
+
+# Grow a tree using all of the available applicant data
+model = rpart(class ~ ., data = train, method = "class", control = rpart.control(cp = 0))
+
+# Make predictions on the test dataset
+test$pred = predict(model, test, type = "class")
+
+# Examine the confusion matrix 
+table(test$class, test$pred)
+
+# Compute the accuracy on the test dataset
+mean(test$class == test$pred)
+
+# Accuracy is 0.5472482
+
+# ===========================================================================================================================
+# Preventing Overgrown Classification Trees -- Pre Prunning and Post Prunning
+# ===========================================================================================================================
+
+# Grow a tree using all of the available applicant data with maxdepth of 6
+model3 = rpart(class ~ ., data = train, method = "class", control = rpart.control(cp = 0, maxdepth = 6))
+
+# Make predictions on the test dataset
+test$pred = predict(model3, test, type = "class")
 
 
+# Compute the accuracy on the test dataset
+mean(test$class == test$pred)
+
+# Accuracy is 0.62866
+
+# ===========================================================================================================================
+# Swap maxdepth for a minimum split of 500
+# ===========================================================================================================================
+
+# Grow a tree using all of the available applicant data with minimum split of 500
+model4 = rpart(class ~ ., data = train, method = "class", control = rpart.control(cp = 0, minsplit = 500))
+
+# Make predictions on the test dataset
+test$pred = predict(model4, test, type = "class")
 
 
+# Compute the accuracy on the test dataset
+mean(test$class == test$pred)
+
+# Accuracy is 0.6274
+
+# ===========================================================================================================================
+# By using post prunning, you can intentionally grow a large and complex tree then prune it to be smaller and more efficient later on
+# ===========================================================================================================================
+
+# Grow an overly complex tree
+model5 = rpart(class ~ ., data = train, method = "class", control = rpart.control(cp = 0))
+
+# Examine the complexity plot
+plotcp(model5)
+
+# Prune the tree
+model_pruned = prune(model5, cp = 0.001)
+
+# Make predictions on the test dataset
+test$pred = predict(model_pruned, test, type = "class")
 
 
-# Total number of rows in the data frame
-n = nrow(df)
+# Compute the accuracy on the test dataset
+mean(test$class == test$pred)
 
-# Number of rows for the training set - 80% of the dataset
-n_train = round(0.80*n)
+# Accuracy is 0.6307
 
-# Create a vector of indices which is an 80% random sample
-set.seed(123)
-train_indices = sample(1:n, n_train)
+# ===========================================================================================================================
+# Build pre and post prunning and visualizing classification trees
+# ===========================================================================================================================
 
-# Subset the data frame to training indices only
-df_train = df[train_indices, ]
+# Grow an overly complex tree
+model7 = rpart(class ~ ., data = train, method = "class", control = rpart.control(cp = 0.001, maxdepth = 6, minsplit = 250))
 
-# Exclude the training indices to create the test set
-df_test = df[-train_indices, ]
+# Make predictions on the test dataset
+test$pred = predict(model7, test, type = "class")
 
-# Import the GBM library
-library(gbm)
 
-# Convert "yes" to 1, no to "0"
-df_train$return10 = ifelse(df_train$return_at_t_plus10 > df_train$return_at_t_plus1, 1, 0)
+# Compute the accuracy on the test dataset
+mean(test$class == test$pred)
 
-# Train a 10,000 tree GBM Model: formula y ~ x (Independent Variables)
-model = gbm(formula = return10 ~ raw_s + raw_s_mean + raw_vol + s + s_mean,
-            distribution = "bernoulli",
-            data = df_train,
-            n.trees = 20,000)
-            
-# Print the model object
-print(model)
+# Examine the model object 
+model7
 
-# Summary () prints variable importance
-summary(model)
+# Load the rpart.plot package
+library(rpart.plot)
+
+# Plot the loan_model with default settings
+rpart.plt(model7)
+
+# Plot the loan_model with customized settings
+rpart.plot(model7, type = 3, box.palette = c("red", "green"), fallen.leaves = TRUE)
+
+
+# ===========================================================================================================================
+# Build a random forest model
+# ===========================================================================================================================
+
+# Load the randomForest package
+library(randomForest)
+
+model8 = randomForest(class ~ ., data = train, ntree = 500)
+
+# Make predictions on the test dataset
+test$pred = predict(model8, test)
+
+
+# Compute the accuracy on the test dataset
+mean(test$class == test$pred)
