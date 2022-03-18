@@ -144,6 +144,90 @@ ce(actual = test$class,
 # ===========================================================================================================================
 # ===========================================================================================================================
 
+# bagging () function from the ipred package. The number of bagged trees can be specified using the nbagg parameter. 
+# We can also use the default 25
+
+library(ipred)
+
+# bagging is a randomized model so let's set a seed(123) for reproducibility
+set.seed(123)
+
+# Train a bagged model
+# If we want to estimate the model's accuracy using the "out-of-bag" samples we can set the coob parameter to TRUE.
+# The OOB samples are the training observations that were not selected into the bootstrapeed sample (used in the training)
+
+# Since these observations were not used in training, we can ue them instead to evaluate the accuracy of the model 
+# done automatically inside the bagging () function
+
+# class in test set should be factors
+test$class = as.factor(test$class)
+
+# Bagging model
+model_bagging = bagging(formula = class ~ ., 
+                  data = train, 
+                  coob = TRUE)
+
+# look at the model output
+print(model_bagging)
+
+# out-of-bag estimates of misclassification error: 0.4242
+
+# Predict and Confusion Matrix
+# Generate predicted classes using the model object
+classII_prediction = predict(object = model_bagging, 
+                              newdata = test, 
+                              type = "class") # return classification labels
+
+# look at the model output
+print(classII_prediction)
+
+# class in test set should be factors
+test$class = as.factor(test$class)
+
+# Calculate the confusion matrix for the test set
+confusionMatrix(data = classII_prediction, reference = test$class)
+
+# Generate prediction on the test set
+pred = predict(object = model_bagging, 
+                newdata = test, 
+                type = "prob")
+                
+ # pred is a matrix
+ class(pred)
+ 
+ # Look at the pred format
+ head(pred)
+ 
+ # Compute the AUC (acutal must be a binary (or 1/0 numeric) vector)
+ auc(actual = ifelse(test$class == "1", 1, 0)
+                  predicted = pred[, "1"])
+                  
+# AUC = 0.602773
+
+
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+ 
+ 
+ 
+ 
+ 
 
 
 
